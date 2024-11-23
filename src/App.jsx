@@ -49,10 +49,20 @@ const tempWatchedData = [
 ];
 
 export default function App() {
+  const [movies, setMovies] = useState(tempMovieData);
   return (
     <>
-      <NavBar />
-      <Main />
+      <NavBar>
+        <Logo />
+        <SearchBar />
+        <NumResult movies={movies} />
+      </NavBar>
+      <Main>
+        <ListBox >
+        <MovieList movies={movies} />
+        </ListBox>
+        <WatchBox />
+      </Main>
     </>
   );
 }
@@ -60,14 +70,8 @@ export default function App() {
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-function NavBar() {
-  return (
-    <nav className="nav-bar">
-      <Logo />
-      <SearchBar />
-      <NumResult />
-    </nav>
-  );
+function NavBar({ children }) {
+  return <nav className="nav-bar">{children}</nav>;
 }
 
 function Logo() {
@@ -92,24 +96,19 @@ function SearchBar() {
   );
 }
 
-function NumResult() {
+function NumResult({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>X</strong> results
+      Found <strong>{movies.length}</strong> results
     </p>
   );
 }
 
-function Main() {
-  return (
-    <main className="main">
-      <ListBox />
-      <WatchBox />
-    </main>
-  );
+function Main({ children }) {
+  return <main className="main">{children}</main>;
 }
 
-function ListBox() {
+function ListBox({ children }) {
   const [isOpen1, setIsOpen1] = useState(true);
   return (
     <div className="box">
@@ -119,13 +118,13 @@ function ListBox() {
       >
         {isOpen1 ? "–" : "+"}
       </button>
-      {isOpen1 && <MovieList />}
+      {isOpen1 && children}
     </div>
   );
 }
 
-function MovieList() {
-  const [movies, setMovies] = useState(tempMovieData);
+function MovieList({ movies }) {
+  // const [movies, setMovies] = useState(tempMovieData);
   return (
     <ul className="list">
       {movies?.map((movie) => (
@@ -141,7 +140,6 @@ function MovieList() {
   );
 }
 
- 
 function Movie({ Poster, Title, Year }) {
   return (
     <li>
@@ -172,7 +170,7 @@ function WatchBox() {
       {isOpen2 && (
         <>
           <WatchedSummary watched={watched} />
-          <WatchMovieList watched={watched}/>
+          <WatchMovieList watched={watched} />
         </>
       )}
     </div>
@@ -209,30 +207,29 @@ function WatchedSummary({ watched }) {
   );
 }
 
-
-function WatchMovieList ( {watched} ) {
+function WatchMovieList({ watched }) {
   return (
-<ul className="list">
-            {watched.map((movie) => (
-              <li key={movie.imdbID}>
-                <img src={movie.Poster} alt={`${movie.Title} poster`} />
-                <h3>{movie.Title}</h3>
-                <div>
-                  <p>
-                    <span>⭐️</span>
-                    <span>{movie.imdbRating}</span>
-                  </p>
-                  <p>
-                    <span>🌟</span>
-                    <span>{movie.userRating}</span>
-                  </p>
-                  <p>
-                    <span>⏳</span>
-                    <span>{movie.runtime} min</span>
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-  )
+    <ul className="list">
+      {watched.map((movie) => (
+        <li key={movie.imdbID}>
+          <img src={movie.Poster} alt={`${movie.Title} poster`} />
+          <h3>{movie.Title}</h3>
+          <div>
+            <p>
+              <span>⭐️</span>
+              <span>{movie.imdbRating}</span>
+            </p>
+            <p>
+              <span>🌟</span>
+              <span>{movie.userRating}</span>
+            </p>
+            <p>
+              <span>⏳</span>
+              <span>{movie.runtime} min</span>
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
 }
