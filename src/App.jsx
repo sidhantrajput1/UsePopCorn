@@ -1,6 +1,6 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
+/* eslint-disable no-unused-vars */
+import { useState } from "react";
 
 const tempMovieData = [
   {
@@ -52,64 +52,24 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-const KEY = "f84fc31d";
-
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
-
-  const query = "Interstellar"
-
-  useEffect(function () {
-    async function fetchMovie() {
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-      ); 
-      const data = await res.json();
-      setMovies(data.Search);
-      console.log(data.Search)
-    }
-    fetchMovie( )
-  },[]);
-
-  // fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=Interstellar`)
-  //   .then((res) => res.json())
-  //   .then((data) => setMovies(data.Search))
-
+  const [movies, setMovies] = useState(tempMovieData);
   return (
     <>
-      <NavBar>
-        <Logo />
-        <Search />
-        <NumResult movies={movies} />
-      </NavBar>
-      <Main>
-        {/* <Box element={<MovieList movies={movies} />} />
-        <Box
-          element={
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} />
-            </>
-          }
-        /> */}
-
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
-        <Box>
-          <>
-            <WatchedSummary watched={watched} />
-            <WatchedMovieList watched={watched} />
-          </>
-        </Box>
-      </Main>
+      <NavBar movies={movies} />
+      <Main movies={movies} />
     </>
   );
 }
 
-function NavBar({ children }) {
-  return <nav className="nav-bar">{children}</nav>;
+function NavBar({ movies }) {
+  return (
+    <nav className="nav-bar">
+      <Logo />
+      <SearchBar />
+      <NumResult movies={movies} />
+    </nav>
+  );
 }
 
 function Logo() {
@@ -121,7 +81,7 @@ function Logo() {
   );
 }
 
-function Search() {
+function SearchBar() {
   const [query, setQuery] = useState("");
   return (
     <input
@@ -142,65 +102,46 @@ function NumResult({ movies }) {
   );
 }
 
-function Main({ children }) {
-  return <main className="main">{children}</main>;
-}
-
-function Box({ children }) {
-  const [isOpen, setIsOpen] = useState(true);
+function Main({ movies }) {
   return (
-    <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
-        {isOpen ? "–" : "+"}
-      </button>
-      {isOpen && children}
-    </div>
+    <main className="main">
+      <ListBox movies={movies} />
+      <WatchedBox />
+    </main>
   );
 }
 
-{
-  /* function WatchedBox() {
-  const [watched, setWatched] = useState(tempWatchedData);
-  const [isOpen2, setIsOpen2] = useState(true);
-
+function ListBox({ movies }) {
+  const [isOpen1, setIsOpen1] = useState(true);
   return (
     <div className="box">
       <button
         className="btn-toggle"
-        onClick={() => setIsOpen2((open) => !open)}
+        onClick={() => setIsOpen1((open) => !open)}
       >
-        {isOpen2 ? "–" : "+"}
+        {isOpen1 ? "–" : "+"}
       </button>
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
-        </>
-      )}
+      {isOpen1 && <MovieList movies={movies} />}
     </div>
   );
-} */
 }
 
 function MovieList({ movies }) {
-  // const [movies, setMovies] = useState(tempMovieData);
   return (
     <ul className="list">
       {movies?.map((movie) => (
         <Movie
-          key={movie.imdbID}
-          movie={movie}
-          imdbID={movie.imdbID}
-          Poster={movie.Poster}
           Title={movie.Title}
           Year={movie.Year}
+          imdbID={movie.imdbID}
+          Poster={movie.Poster}
+          key={movie.Poster}
         />
       ))}
     </ul>
   );
 }
 
-// eslint-disable-next-line react/prop-types
 function Movie({ imdbID, Poster, Title, Year }) {
   return (
     <li key={imdbID}>
@@ -216,11 +157,32 @@ function Movie({ imdbID, Poster, Title, Year }) {
   );
 }
 
-function WatchedSummary({ watched }) {
+function WatchedBox() {
+  const [watched, setWatched] = useState(tempWatchedData);
+  const [isOpen2, setIsOpen2] = useState(true);
+
+  return (
+    <div className="box">
+      <button
+        className="btn-toggle"
+        onClick={() => setIsOpen2((open) => !open)}
+      >
+        {isOpen2 ? "–" : "+"}
+      </button>
+      {isOpen2 && (
+        <>
+          <WatchSummary watched={watched} />
+          <WatchedMoviesList watched={watched} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function WatchSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
   const avgRuntime = average(watched.map((movie) => movie.runtime));
-
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
@@ -246,11 +208,11 @@ function WatchedSummary({ watched }) {
   );
 }
 
-function WatchedMovieList({ watched }) {
+function WatchedMoviesList({ watched }) {
   return (
     <ul className="list">
-      {watched.map((movie) => (
-        <WatchedMovie movie={movie} key={movie.imdbID} />
+      {watched.map((movie, i) => (
+        <WatchedMovie key={i} movie={movie} />
       ))}
     </ul>
   );
@@ -258,7 +220,7 @@ function WatchedMovieList({ watched }) {
 
 function WatchedMovie({ movie }) {
   return (
-    <li>
+    <li key={movie.imdbID}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
